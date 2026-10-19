@@ -1,7 +1,7 @@
 ---
 name: router
-title: "Phantom AI - Prepaid LLM inference and model router"
-description: "OpenAI- and Anthropic-compatible chat over hundreds of models, plus embeddings, images, speech, transcription, rerank and video. phantom-1 picks a model per request. Prepaid credit bought with Solana USDC over x402 or MPP."
+title: "Phantom AI: prepaid LLM inference and model router"
+description: "OpenAI- and Anthropic-compatible large language model (LLM) chat over hundreds of models, plus embeddings, images, speech, transcription, rerank and video. phantom-1 picks a model per request. Paid in Solana USDC over x402 or MPP."
 use_case: "Use for LLM chat, Anthropic Messages or OpenAI Responses calls, embeddings, image generation, text to speech, transcription, reranking or video, paid from prepaid USDC credit with no account, or when an agent wants a model picked for it."
 category: ai_ml
 service_url: https://phantom.codes
@@ -10,15 +10,16 @@ openapi:
   path: openapi.json
 ---
 
-Phantom AI serves chat models from many providers in three request formats:
-OpenAI Chat Completions (`POST /v1/chat/completions`), Anthropic Messages
-(`POST /v1/messages`) and OpenAI Responses (`POST /v1/responses`). All three
-stream. The same key pays for embeddings (`/v1/embeddings`), images
-(`/v1/images/generations`), speech (`/v1/audio/speech`), transcription
-(`/v1/audio/transcriptions`), reranking (`/v1/rerank`) and video
-(`/v1/video/generations`). A video job takes its cost up front; poll
-`/v1/video/generations/{id}` until it finishes, and a failed job gets its
-money back. `GET /v1/models` is free and lists each model id with its price.
+Phantom AI serves large language model (LLM) chat from many providers in
+three request formats: OpenAI Chat Completions (`POST
+/v1/chat/completions`), Anthropic Messages (`POST /v1/messages`) and OpenAI
+Responses (`POST /v1/responses`). All three stream. The same key pays for
+embeddings (`/v1/embeddings`), images (`/v1/images/generations`), speech
+(`/v1/audio/speech`), transcription (`/v1/audio/transcriptions`), reranking
+(`/v1/rerank`) and video (`/v1/video/generations`). A video job takes its
+cost up front; poll `/v1/video/generations/{id}` until it finishes, and a
+failed job gets its money back. `GET /v1/models` is free and lists each
+model id with its price.
 
 Send `model: "phantom-1"` and the router picks a model for each request from
 three tiers: Economy, Standard and Frontier. `x-phantom-routed` names the
@@ -27,7 +28,7 @@ model it picked, and `x-phantom-route-receipt` adds the tier and the reason.
 limits. To pick a model yourself, copy an id from `/v1/models`. Ids change
 when providers ship new models, so read the list first.
 
-## Paying
+## Buy credit and pay for calls
 
 You pay once for credit, then spend it with an API key.
 
@@ -39,7 +40,8 @@ You pay once for credit, then spend it with an API key.
    ```
 
    Phantom answers with a 402 for that amount in Solana USDC, over x402 or
-   MPP. `pay` pays it and resends the request. The paid response holds
+   the Machine Payments Protocol (MPP). `pay` pays it and resends the
+   request. The paid response contains
    `api_key`, `recovery_code`, `credit_usd` (what this payment added),
    `workspace_id` and `recovery`. You can buy $0.10 to $10,000. An empty
    body buys $1.
@@ -54,7 +56,7 @@ You pay once for credit, then spend it with an API key.
    to do. Each call costs the listed token price of the model that answered,
    plus 5%. On a non-streaming call, `x-phantom-cost-usd` and
    `x-phantom-balance-usd` show the cost and what is left. A stream sends its
-   cost in an `event: phantom.receipt` just before it ends.
+   cost in an `event: phantom.receipt` before it ends.
    `GET /v1/key/balance` shows the credit at any time.
 
 A paid response with `"status": "pending"` (a 503 or 409) means the transfer
@@ -70,7 +72,7 @@ pays over MPP. Phantom checks the key before it asks for money and refuses
 an unknown or deactivated key with a 400. Sending the same paid request
 twice adds the credit once.
 
-Each priced response carries an Ed25519 receipt in `x-phantom-receipt` with
+Each priced response includes an Ed25519 receipt in `x-phantom-receipt` with
 the model, tokens and cost. Check it against the public key at
 `GET /v1/receipts/key`.
 
@@ -96,9 +98,9 @@ These routes take the same Bearer key and cost nothing, except where noted.
   completion text.
 - `POST /v1/receipts/anchor` writes a receipt's hash to Solana for $0.01.
 
-More keys on the same credit, and a monthly Pro or Max plan for `phantom-1`,
-are managed with the workspace's recovery credential under
-`/v1/workspaces` and `/v1/plan`.
+To add keys that share the credit, or a monthly Pro or Max plan for
+`phantom-1`, use the workspace's recovery credential with `/v1/workspaces`
+and `/v1/plan`.
 
 ## Spend-aware usage
 
